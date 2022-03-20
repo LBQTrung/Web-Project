@@ -1,0 +1,129 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-family: 'Roboto', sans-serif;
+}
+
+body {
+    height: 100vh;
+    background: linear-gradient(45deg, #4158d0, #c850c0, #ffcc70);
+    display: flex;
+}
+
+.create-modal {
+    margin: auto;
+    text-align: center;
+    cursor: pointer;
+}
+
+.create-modal:hover {
+    opacity: 0.8;
+    transition: linear 0.1s;
+}
+
+.create-modal__play {
+    font-size: 100px;
+    color: #fff;
+}
+
+.create-modal__desc {
+    margin: -10px;
+    font-size: 30px;
+    font-weight: 500;
+    color: #fff;
+}
+
+.modal {
+    margin: auto;
+    width: 450px;
+    height: 200px;
+    background-color: #fff;
+    border-radius: 10px;
+    z-index: 2;
+    position: relative;
+    display: none;
+    animation: down_to_center linear 0.3s;
+}
+
+@keyframes down_to_center {
+    from {
+        opacity: 0;
+        top: -100px;
+    }
+    to {
+        opacity: 1;
+        top: 0;
+    }
+}
+
+.modal__header {
+    height: 50px;
+    background-color: #e26e70;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal__header-title {
+    font-size: 17px;
+    color: #fff;
+    margin: 15px;
+    font-weight: 500;
+}
+
+.modal__header-close {
+    font-size: 25px;
+    color: #fff;
+    font-weight: 600;
+    margin: 15px;
+    cursor: pointer;
+}
+
+.modal__header-close:hover {
+    opacity: 0.8;
+}
+
+.modal__body {
+    height: 85px;
+    padding: 15px 15px;
+}
+
+.modal__body-heading {
+    font-weight: 600;
+    font-size: 24px;
+    color: #e26e70;
+}
+
+.modal__body-content {
+    font-size: 16px;
+    color: #292929;
+    margin-top: 15px;
+}
+
+.modal__footer {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.modal__footer-close {
+    border: none;
+    background-color: #e26e70;
+    color: #fff;
+    font-size: 14px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin: 15px;
+    cursor: pointer;
+}
+
+.modal__footer-close:hover {
+    opacity: 0.8;
+}
