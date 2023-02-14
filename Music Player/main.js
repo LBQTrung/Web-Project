@@ -8,7 +8,11 @@ const cdThumb = $('.cd-thumb')
 const audio = $('#audio')
 const playBtn = $('.btn.btn-toggle-play')
 const progress = $('#progress')
-console.log(progress)
+const nextBtn = $('.btn-next')
+const prevBtn = $('.btn-prev')
+const randomBtn = $('.btn-random')
+const repeatBtn = $('.btn-repeat')
+console.log(repeatBtn)
 
 let app = { 
     songs :  [
@@ -60,8 +64,10 @@ let app = {
             image: "https://i.ytimg.com/vi/jTLhQf5KJSc/maxresdefault.jpg"
         }
     ],
-    currentIndex: 0,
+    currentIndex: 2,
     isPlaying: false,
+    isRandom: false,
+    isRepeat: false,
 
     defineProperties: function() {
         Object.defineProperty(this, 'currentSong', {
@@ -72,9 +78,9 @@ let app = {
     },
 
     render: function() {
-        const htmls = this.songs.map((song) => {
+        const htmls = this.songs.map((song, index) => {
             return `
-            <div class="song">
+            <div class="song ${this.currentIndex == index ? "active" : ""}">
                 <div class="thumb" style="background-image: url(${song.image})">
                 </div>
                 <div class="body">
@@ -100,13 +106,23 @@ let app = {
                 cd.style.opacity = newCDWidth > 0 ? newCDWidth/cdWidth : 0
             }
         }
+        // Handle CD rotate / static (!! Has bug duration only 10s)
+        const cdThmbAnimate = cdThumb.animate([
+            {transform: 'rotate(360deg)'}
+        ], {
+            duration: 10000, // 10000 ms
+            literation: Infinity
+        })
+        cdThmbAnimate.pause()
 
         // Handle when click play button
         playBtn.onclick = function() {
             if (_this.isPlaying){
                 audio.pause()
+                cdThmbAnimate.pause()
             } else {
                 audio.play()
+                cdThmbAnimate.play()
             }
         }
         // Handle play event
@@ -119,6 +135,12 @@ let app = {
             _this.isPlaying = false
             player.classList.remove('playing')
         }
+        // Handle rewind song (!! Has bug)
+        progress.onchange = function(e) {
+            // Scale of input range is [0, 100]
+            const seekTime = e.target.value / 100 * audio.duration
+            audio.currentTime = seekTime
+        }
         // Handle timeline of song
         audio.ontimeupdate = function() {
             if (audio.duration) {
@@ -126,12 +148,83 @@ let app = {
                 progress.value = progressPercent 
             }
         }
+        // Handle next song
+        nextBtn.onclick = function() {
+            if (_this.isRandom) {
+                _this.toRandomSong()
+            } else {
+                _this.toNextSong()
+            }
+            audio.play()
+        }
+        // Handle prev song
+        prevBtn.onclick = function() {
+            if (_this.isRandom) {
+                _this.toRandomSong()
+            } else {
+                _this.toPrevSong()
+            }
+            audio.play()
+        }
+        // Handle random song
+        randomBtn.onclick = function() {
+            _this.isRandom = !(_this.isRandom)
+            randomBtn.classList.toggle('active')
+        }
+        // Handle end song
+        audio.onended = function() {
+            if (_this.isRepeat) {
+                audio.play()
+            } else {
+                nextBtn.click()
+            }
+        }
+        // Handle repeat song
+        repeatBtn.onclick = function() {
+            _this.isRepeat = !(_this.isRepeat)
+            repeatBtn.classList.toggle('active')
+        }
     },
+
+
 
     loadCurrentSong: function() {
         heading.textContent = this.currentSong.name
         cdThumb.style.backgroundImage = `url(${this.currentSong.image})`
         audio.src = this.currentSong.path
+        let songList = $$('.song')
+        songList.forEach(function(song) {
+            if (song.classList.contains('active')) {
+                song.classList.remove('active')
+            }
+        })
+        songList[this.currentIndex].classList.add('active')
+
+    },
+
+    toNextSong: function() {
+        this.currentIndex += 1
+        if (this.currentIndex >= this.songs.length) {
+            this.currentIndex = 0
+        }
+        this.loadCurrentSong()
+    },
+
+    toPrevSong: function() {
+        this.currentIndex -= 1
+        if (this.currentIndex < 0) {
+            this.currentIndex = this.songs.length -1 
+        }
+        this.loadCurrentSong()
+    },
+
+    toRandomSong: function() {
+        let randomIndex = Math.floor(Math.random() * (this.songs.length - 1))
+        while (randomIndex == this.currentIndex) {
+            randomIndex = Math.floor(Math.random() * (this.songs.length - 1))
+        }
+        this.currentIndex = randomIndex
+        this.loadCurrentSong()
     },
 
     start: function() {
