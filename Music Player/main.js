@@ -1,6 +1,8 @@
 const $ = document.querySelector.bind(document)
 const $$ = document.querySelectorAll.bind(document)
 
+const PLAYER_STORAGE_KEY = 'MUSIC_PLAYER'
+
 const player = $('.player')
 const cd = $(".cd")
 const heading = $('header h2')
@@ -13,7 +15,6 @@ const prevBtn = $('.btn-prev')
 const randomBtn = $('.btn-random')
 const repeatBtn = $('.btn-repeat')
 const playList = $('.playlist')
-console.log(repeatBtn)
 
 let app = { 
     songs :  [
@@ -69,6 +70,11 @@ let app = {
     isPlaying: false,
     isRandom: false,
     isRepeat: false,
+    config: JSON.parse(localStorage.getItem(PLAYER_STORAGE_KEY)) || {},
+    setConfig: function(key, value) {
+        this.config[key] = value;
+        localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(this.config))
+    },
 
     defineProperties: function() {
         Object.defineProperty(this, 'currentSong', {
@@ -155,8 +161,9 @@ let app = {
                 _this.toRandomSong()
             } else {
                 _this.toNextSong()
-                _this.scrollToActiveSong()
+                // _this.scrollToActiveSong()
             }
+            _this.scrollToActiveSong()
             audio.play()
         }
         // Handle prev song
@@ -172,7 +179,8 @@ let app = {
         // Handle random song
         randomBtn.onclick = function() {
             _this.isRandom = !(_this.isRandom)
-            randomBtn.classList.toggle('active')
+            _this.setConfig('isRandom', _this.isRandom)
+            randomBtn.classList.toggle('active', _this.isRandom)
         }
         // Handle end song
         audio.onended = function() {
@@ -185,9 +193,10 @@ let app = {
         // Handle repeat song
         repeatBtn.onclick = function() {
             _this.isRepeat = !(_this.isRepeat)
-            repeatBtn.classList.toggle('active')
+            _this.setConfig('isRepeat', _this.isRepeat)
+            repeatBtn.classList.toggle('active', _this.isRepeat)
         }
-        // Listen click on playlist
+        // Listen click on playlist !! Has bug
         playList.onclick = function(e) {
             const songNode = e.target.closest('.song:not(.active)')
             if (songNode) {
@@ -251,7 +260,15 @@ let app = {
         }, 500)
     },
 
+    loadConfig: function() {
+        this.isRandom = this.config.isRandom
+        this.isRepeat = this.config.isRepeat
+        randomBtn.classList.toggle('active', this.isRandom)
+        repeatBtn.classList.toggle('active', this.isRepeat)
+    },
+
     start: function() {
+        this.loadConfig()
         this.defineProperties()
         this.handleEvents()
         this.loadCurrentSong()
@@ -259,4 +276,3 @@ let app = {
     }
 }
 app.start()
-console.log(app.currentSong)
