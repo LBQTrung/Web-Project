@@ -12,6 +12,7 @@ const nextBtn = $('.btn-next')
 const prevBtn = $('.btn-prev')
 const randomBtn = $('.btn-random')
 const repeatBtn = $('.btn-repeat')
+const playList = $('.playlist')
 console.log(repeatBtn)
 
 let app = { 
@@ -80,7 +81,7 @@ let app = {
     render: function() {
         const htmls = this.songs.map((song, index) => {
             return `
-            <div class="song ${this.currentIndex == index ? "active" : ""}">
+            <div class="song ${this.currentIndex == index ? "active" : ""}", data-index = "${index}">
                 <div class="thumb" style="background-image: url(${song.image})">
                 </div>
                 <div class="body">
@@ -154,6 +155,7 @@ let app = {
                 _this.toRandomSong()
             } else {
                 _this.toNextSong()
+                _this.scrollToActiveSong()
             }
             audio.play()
         }
@@ -163,6 +165,7 @@ let app = {
                 _this.toRandomSong()
             } else {
                 _this.toPrevSong()
+                _this.scrollToActiveSong()
             }
             audio.play()
         }
@@ -183,6 +186,19 @@ let app = {
         repeatBtn.onclick = function() {
             _this.isRepeat = !(_this.isRepeat)
             repeatBtn.classList.toggle('active')
+        }
+        // Listen click on playlist
+        playList.onclick = function(e) {
+            const songNode = e.target.closest('.song:not(.active)')
+            if (songNode) {
+                _this.currentIndex = songNode.dataset.index
+                _this.loadCurrentSong()
+                audio.play()
+            } else {
+                // if (!e.target.closest('.options')) {
+                //     console.log(e.target.closest('.song').dataset.index)
+                // }
+            }
         }
     },
 
@@ -225,6 +241,14 @@ let app = {
         }
         this.currentIndex = randomIndex
         this.loadCurrentSong()
+    },
+
+    scrollToActiveSong: function() {
+        setTimeout(() => {
+            $('.song.active').scrollIntoView(
+                {behavior: "smooth", block: "end", inline: "nearest"}
+            )
+        }, 500)
     },
 
     start: function() {
