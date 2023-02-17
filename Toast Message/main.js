@@ -6,7 +6,7 @@ function toast({title, message, type, duration = 3000}) {
         // Remove automatically
         const autoRemoveId = setTimeout(function() {
             main.removeChild(toast)
-        }, duration + 2000)
+        }, duration + 1000)
 
         // Remove manually
         toast.onclick = function(e) {
@@ -19,7 +19,9 @@ function toast({title, message, type, duration = 3000}) {
         
         toast.classList.add('toast')
         toast.classList.add(`toast--${type}`)
-        toast.style.animation = `slideInLeft ease 1s, fadeOut linear 1s 3s forwards;`
+        const delay = duration/1000
+        toast.style.animation = `slideInLeft ease 0.3s, fadeOut linear 1s ${delay}s forwards`
+        
         const icons = {
             success: "fa-solid fa-circle-check",
             info: 'fa-solid fa-circle-info',
