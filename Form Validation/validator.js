@@ -4,22 +4,32 @@ function Validator(options) {
     var selectorRules = {}
     // validate function when blur input element
     function validate(inputElement, rule) {
-        var errorElement = inputElement.parentElement.querySelector(options.errorSelector)
+        var errorElement = inputElement.closest(options.formGroupSelector).querySelector(options.errorSelector)
 
         // Get rules of a selector
         // element of rules is test() function: rules[i]() == test()
         var rules = selectorRules[rule.selector]
 
         for (var i = 0; i < rules.length; i++) {
-            errorMessage = rules[i](inputElement.value)
+
+            switch (inputElement.type) {
+                case 'radio':
+                case 'checkbox':
+                    errorMessage = rules[i](
+                        formElement.querySelector(rule.selector + ':checked')
+                    )
+                    break;
+                default:
+                    errorMessage = rules[i](inputElement.value)
+            }
             if (errorMessage) break
         }
         if (errorMessage) {
             errorElement.innerText = errorMessage
-            inputElement.parentElement.classList.add('invalid')
+            inputElement.closest(options.formGroupSelector).classList.add('invalid')
         } else {
             errorElement.innerText = ''
-            inputElement.parentElement.classList.remove('invalid')
+            inputElement.closest(options.formGroupSelector).classList.remove('invalid')
         }
         return !errorMessage
     }
@@ -34,20 +44,41 @@ function Validator(options) {
 
             var isFormValid = true
             options.rules.forEach(function(rule) {
-                let inputElement = formElement.querySelector(rule.selector)
-                let isValid = validate(inputElement, rule)
-                if (!isValid) {
-                    isFormValid = false
-                }
+                let inputElements = formElement.querySelectorAll(rule.selector)
+                Array.from(inputElements).forEach(function(inputElement) {
+                    let isValid = validate(inputElement, rule)
+                    if (!isValid) {
+                        isFormValid = false
+                    }
+                })
             })
             if (isFormValid) {
                 // Submit with Javascript
                 if (typeof options.onSubmit === 'function') {
-                    var enableInputs =  formElement.querySelectorAll('[name]:not([disable])')
-                    var formValues = Array.from(enableInputs).reduce(function(accumulator, currentValue){
-                        return {...accumulator, 
-                            [currentValue.name] : currentValue.value
+                    var enableInputs =  formElement.querySelectorAll('[name]')
+                    var formValues = Array.from(enableInputs).reduce(function(values, input){
+                        switch (input.type){
+                            case 'radio':
+                                if (input.matches(':checked')) {
+                                    values[input.name] = input.value
+                                } 
+                                break;
+                            case 'checkbox':
+                                if (input.matches(':checked')) {
+                                    if (values[input.name]) {
+                                        values[input.name].push(input.value)
+                                    } else {
+                                        values[input.name] = [input.value]
+                                    }
+                                } 
+                                break;
+                            case 'file':
+                                values[input.name] = input.files
+                                break;
+                            default:
+                                values[input.name] = input.value
                         }
+                        return values
                     }, {})
                     options.onSubmit(formValues)
                 // Submit with HTML default
@@ -69,9 +100,8 @@ function Validator(options) {
             }
             
 
-            var inputElement = formElement.querySelector(rule.selector)
-            
-            if (inputElement) {
+            var inputElements = formElement.querySelectorAll(rule.selector)
+            Array.from(inputElements).forEach(function(inputElement){
                 // Handle when blur 
                 inputElement.onblur = function() {
                     validate(inputElement, rule)
@@ -79,11 +109,11 @@ function Validator(options) {
                 
                 // Handle when input
                 inputElement.oninput = function() {
-                    let errorElement = inputElement.parentElement.querySelector(options.errorSelector)
+                    let errorElement = inputElement.closest(options.formGroupSelector).querySelector(options.errorSelector)
                     errorElement.innerText = ''
-                    inputElement.parentElement.classList.remove('invalid')
+                    inputElement.closest(options.formGroupSelector).classList.remove('invalid')
                 }
-            }
+            })    
         })
     }
 }
@@ -96,7 +126,7 @@ Validator.isRequired = function(selector, message) {
         selector: selector,
         test: function(value) {
             // Remove space begin and end before check
-            return value.trim() ? undefined : message || "Vui lòng nhập trường này"
+            return value ? undefined : message || "Vui lòng nhập trường này"
         }
     }
 }
