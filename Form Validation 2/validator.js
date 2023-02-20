@@ -1,4 +1,4 @@
-function Validator(formSelector) {
+function Validator(formSelector, options) {
     var formRules = {}
     /**
      * Rule:
@@ -29,7 +29,7 @@ function Validator(formSelector) {
                 if (rule.includes(':')) {
                     let ruleInfo = rule.split(':')
                     rule = ruleInfo[0]
-                    validateRule = validatorRules[rule](ruleInfo[0])
+                    validateRule = validatorRules[rule](ruleInfo[1])
                 }
                 if (formRules[input.name]) {
                     formRules[input.name].push(validateRule)
@@ -98,7 +98,36 @@ function Validator(formSelector) {
         })
 
         if (isFormValid) {
-            formElement.submit()
+            if (typeof options.onSubmit === 'function') {
+                var enableInputs =  formElement.querySelectorAll('[name]')
+                var formValues = Array.from(enableInputs).reduce(function(values, input){
+                    switch (input.type){
+                        case 'radio':
+                            if (input.matches(':checked')) {
+                                values[input.name] = input.value
+                            } 
+                            break;
+                        case 'checkbox':
+                            if (input.matches(':checked')) {
+                                if (values[input.name]) {
+                                    values[input.name].push(input.value)
+                                } else {
+                                    values[input.name] = [input.value]
+                                }
+                            } 
+                            break;
+                        case 'file':
+                            values[input.name] = input.files
+                            break;
+                        default:
+                            values[input.name] = input.value
+                    }
+                    return values
+                    }, {})
+                options.onSubmit(formValues)
+            } else {
+                formElement.submit()
+            }
         } else {
             console.log('có lỗi')
         }
