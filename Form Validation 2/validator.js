@@ -1,5 +1,6 @@
-function Validator(formSelector, options) {
+function Validator(formSelector) {
     var formRules = {}
+    var _this = this
     /**
      * Rule:
      * - Error return error message
@@ -45,11 +46,15 @@ function Validator(formSelector, options) {
         })
         function handleValidate(event) {
             let rules = formRules[event.target.name]
-            let errorMessage 
-            rules.find(function(rule) {
-                errorMessage = rule(event.target.value)
-                return errorMessage
-            })
+            let errorMessage
+
+            for (var rule of rules) {
+                if (rule(event.target.value)) {
+                    errorMessage = rule(event.target.value)
+                    break
+                }
+            }
+
             // Output error message
             let messageElement = event.target.closest('.form-group').querySelector('.form-message')
             let formGroup = event.target.closest('.form-group')
@@ -77,7 +82,6 @@ function Validator(formSelector, options) {
                 messageElement.classList.remove('invalid')
             }
         }
-        console.log(formRules)
 
     }
 
@@ -97,8 +101,10 @@ function Validator(formSelector, options) {
             }
         })
 
+        
+
         if (isFormValid) {
-            if (typeof options.onSubmit === 'function') {
+            if (typeof _this.onSubmit === 'function') {
                 var enableInputs =  formElement.querySelectorAll('[name]')
                 var formValues = Array.from(enableInputs).reduce(function(values, input){
                     switch (input.type){
@@ -124,7 +130,7 @@ function Validator(formSelector, options) {
                     }
                     return values
                     }, {})
-                options.onSubmit(formValues)
+                _this.onSubmit(formValues)
             } else {
                 formElement.submit()
             }
