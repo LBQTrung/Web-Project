@@ -48,6 +48,10 @@ header .volume-slider input {
     margin-left: 10px;
 }
 
+header .keys-checkbox {
+    margin-left: 10px;
+}
+
 header .keys-checkbox input {
     outline: none;
     appearance: none;
@@ -87,6 +91,7 @@ header .keys-checkbox input:checked::before {
     text-transform: uppercase;
     color: #a2a2a2;
     display: flex;
+    justify-content: center;
     margin-top: 40px;
     user-select: none;
 }
@@ -134,3 +139,25 @@ header .keys-checkbox input:checked::before {
     font-size: 1.4rem;
 }
 
+@media screen and (max-width: 615px) {
+    .piano-keys .key:nth-child(13),
+    .piano-keys .key:nth-child(14),
+    .piano-keys .key:nth-child(15),
+    .piano-keys .key:nth-child(16),
+    .piano-keys .key :nth-child(17) {
+        display: none;
+    }
+    .piano-keys .white {
+        width: 50px;
+    }
+    header h2 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-right: 10px;
+    }
+
+    header .keys-checkbox input:checked::before {
+        left: 17px;
+        background-color: #333;
+    }
+}
